@@ -33,7 +33,7 @@ function productListPrompt(){
     
         ask.prompt([
             {
-            name: "productList",
+            name: "whatId",
             message: "What item would you like ?",
             type: "input"
         },{ 
@@ -41,26 +41,38 @@ function productListPrompt(){
             message: "How many would you like to buy?",
             type: "input"
         }
-        ]).then(function(res){
-            console.log(res);
+        ]).then(function(answer){
+            conn.query("SELECT * FROM products WHERE ?", { id:  answer.whatId }, function(err, res) {
+                if(err) throw(err);
+                console.log(res[0].stock_quantity);
+                let customerOrder = res[0].stock_quantity - answer.number;
+                console.log(customerOrder);
+                console.log(answer.whatId);
+                let query = "UPDATE products SET stock_quantity ? WHERE id ?";
+                conn.query (query, [customerOrder, answer.whatID], function(err, result) {
+                    console.log(result);
+                });
+              
+            });
+           
         });
-        conn.end();
+        
 }
 
 
-function getId(callback) {
+
+function getStock() {
     conn.query("SELECT * FROM products",(err,res)=>{
         if(err) throw(err);
-        let items = [];
-        res.forEach(i=>items.push(i.id));
-        // callback(items);    
-        console.log(items);
+        let stockQ = [];
+        res.forEach(i=>stockQ.push(i.stock_quantity));
+        // callback(stockQ);    
+        console.log(stockQ);
     });
 }
 
-// getId();
 getItems();
-
+// conn.end();
 
 
 
